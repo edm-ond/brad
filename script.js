@@ -1,58 +1,55 @@
 document.addEventListener("DOMContentLoaded", () => {
-    /* THEME TOGGLE */
-    const themeToggle = document.getElementById("theme-toggle");
     const htmlElement = document.documentElement;
-    const themeIcon = themeToggle.querySelector(".theme-icon");
+    const themeToggle = document.getElementById("theme-toggle");
+    const themeIcon = themeToggle?.querySelector(".theme-icon");
+
+    const updateIcon = (theme) => {
+        if (themeIcon) themeIcon.innerHTML = theme === "dark" ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    };
 
     const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-        htmlElement.setAttribute("data-theme", savedTheme);
-        updateIcon(savedTheme);
-    } else {
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        if (prefersDark) {
-            htmlElement.setAttribute("data-theme", "dark");
-            updateIcon("dark");
-        }
-    }
+    const initialTheme = savedTheme || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    htmlElement.setAttribute("data-theme", initialTheme);
+    updateIcon(initialTheme);
 
-    themeToggle.addEventListener("click", () => {
-        const currentTheme = htmlElement.getAttribute("data-theme");
-        const newTheme = currentTheme === "dark" ? "light" : "dark";
-        htmlElement.setAttribute("data-theme", newTheme);
-        localStorage.setItem("theme", newTheme);
-        updateIcon(newTheme);
+    themeToggle?.addEventListener("click", () => {
+        const nextTheme = htmlElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        htmlElement.setAttribute("data-theme", nextTheme);
+        localStorage.setItem("theme", nextTheme);
+        updateIcon(nextTheme);
     });
 
-    function updateIcon(theme) {
-        if (theme === "dark") {
-            themeIcon.innerHTML = '<i class="fas fa-sun"></i>';
-        } else {
-            themeIcon.innerHTML = '<i class="fas fa-moon"></i>';
-        }
-    }
-
-    /* MOBILE NAVIGATION */
     const menuButton = document.querySelector(".menu-button");
     const navLinks = document.querySelector(".nav-links");
+    const closeMenu = () => {
+        navLinks?.classList.remove("active");
+        menuButton?.setAttribute("aria-expanded", "false");
+        if (menuButton) menuButton.textContent = "☰";
+    };
 
-    if (menuButton && navLinks) {
-        menuButton.addEventListener("click", () => {
-            navLinks.classList.toggle("active");
-            menuButton.textContent = navLinks.classList.contains("active") ? "✕" : "☰";
-        });
+    menuButton?.addEventListener("click", () => {
+        const isOpen = navLinks?.classList.toggle("active");
+        menuButton.setAttribute("aria-expanded", String(Boolean(isOpen)));
+        menuButton.textContent = isOpen ? "✕" : "☰";
+    });
+    document.querySelectorAll(".nav-links a").forEach((link) => link.addEventListener("click", closeMenu));
+    menuButton?.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") { closeMenu(); menuButton.focus(); }
+    });
 
-        document.querySelectorAll(".nav-links a").forEach(link => {
-            link.addEventListener("click", () => {
-                navLinks.classList.remove("active");
-                menuButton.textContent = "☰";
+    const sections = document.querySelectorAll("section[id]");
+    const navigationLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+    if ("IntersectionObserver" in window && sections.length) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) navigationLinks.forEach((link) => {
+                    link.classList.toggle("active", link.getAttribute("href") === `#${entry.target.id}`);
+                });
             });
-        });
+        }, { threshold: 0.25, rootMargin: "-10% 0px -50% 0px" });
+        sections.forEach((section) => observer.observe(section));
     }
 
-    /* SET YEAR */
-    const yearEl = document.getElementById("year");
-    if (yearEl) {
-        yearEl.textContent = new Date().getFullYear();
-    }
+    const copyrightYear = document.getElementById("copyright-year");
+    if (copyrightYear) copyrightYear.innerHTML = `&copy; ${new Date().getFullYear()} Bradley Ochieng. All Rights Reserved.`;
 });
