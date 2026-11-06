@@ -53,3 +53,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const copyrightYear = document.getElementById("copyright-year");
     if (copyrightYear) copyrightYear.innerHTML = `&copy; ${new Date().getFullYear()} Bradley Ochieng. All Rights Reserved.`;
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('#contact-form');
+  if (!form) return;
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const status = form.querySelector('.form-status');
+    const name = form.elements.name.value.trim();
+    const email = form.elements.email.value.trim();
+    const message = form.elements.message.value.trim();
+    const recipient = 'bp2456512@gmail.com';
+    const subject = encodeURIComponent(`Portfolio enquiry from ${name}`);
+    const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+
+    status.textContent = `Opening your email app for ${recipient}. Your message has not been sent until you send it there.`;
+    window.location.href = `mailto:${recipient}?subject=${subject}&body=${body}`;
+  });
+});
